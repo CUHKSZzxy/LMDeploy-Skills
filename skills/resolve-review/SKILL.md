@@ -1,6 +1,6 @@
 ---
 name: resolve-review
-description: Fetch and resolve PR review comments, then push fixes.
+description: Use when a PR has inline or top-level review comments to address — fetches all comments via gh api, guides through fixing each, then lints, commits, and pushes.
 ---
 
 # Resolve PR Review Comments
@@ -58,3 +58,12 @@ git commit -m "fix: address PR review comments"
 ```bash
 git push
 ```
+
+## Output Contract
+
+This skill produces:
+
+- List of comments addressed (file path + line + summary of fix)
+- Lint status (pre-commit pass/fail)
+- Commit SHA of the fix commit
+- Push confirmation (remote branch updated)

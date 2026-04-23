@@ -1,9 +1,11 @@
 ---
 name: code-navigation
-description: LMDeploy codebase directory map for fast orientation.
+description: Use when you need to locate a specific subsystem, module, or key file in the LMDeploy codebase — covers pytorch backend, vl/, serve/, and top-level orchestration files.
 ---
 
 # LMDeploy Project Structure
+
+> Valid as of: LMDeploy main, 2026-04-23. Re-run `tree lmdeploy/ -L 2` to check for drift.
 
 ```text
 lmdeploy/

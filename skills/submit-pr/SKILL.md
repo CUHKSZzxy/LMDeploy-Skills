@@ -1,6 +1,6 @@
 ---
 name: submit-pr
-description: Submit a GitHub pull request for LMDeploy.
+description: Use when ready to open a new pull request against InternLM/lmdeploy — covers creating a branch off main, linting, staging specific files, committing with a conventional prefix, pushing, and creating the PR via gh.
 ---
 
 # Submit a PR for LMDeploy
@@ -62,3 +62,12 @@ conda run -n <env> gh pr create \
 EOF
 )"
 ```
+
+## Output Contract
+
+This skill produces:
+
+- PR URL (printed by `gh pr create`)
+- Branch name used
+- Commit SHA (`git rev-parse HEAD`)
+- Lint status (pre-commit pass/fail before commit)

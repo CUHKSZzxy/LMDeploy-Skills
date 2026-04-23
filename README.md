@@ -5,24 +5,37 @@ Personal Claude Code skills for LMDeploy development.
 ## Skills
 
 ### `/check-env`
-Verify editable install, Python path, and CUDA. Run at session start or when `import lmdeploy` fails.
+
+Use when `import lmdeploy` fails, CUDA not found, wrong Python version, editable install not recognized, or `conda run` invokes system Python. Covers conda activation, editable install verification, and CUDA sanity check.
 
 ### `/code-navigation`
-Full LMDeploy directory map. Covers PyTorch backend layout and key files. Read this first when navigating an unfamiliar part of the codebase.
+
+Use when you need to locate a specific subsystem, module, or key file in the LMDeploy codebase. Covers pytorch backend, vl/, serve/, and top-level orchestration files.
 
 ### `/support-new-model`
-Step-by-step guide for adding a new LLM or VLM to the PyTorch backend: model file → module_map → config builder → VL preprocessor → archs.py. Includes code skeletons, checklist, common pitfalls, and verification commands.
+
+Use when adding support for a new LLM or VLM architecture to LMDeploy's PyTorch backend. The SKILL.md is a lean workflow with step summaries; deep content lives in `references/` and is loaded only when needed:
+
+| Reference file                    | Load when                                                   |
+| --------------------------------- | ----------------------------------------------------------- |
+| `references/key-files.md`         | Before writing any code — study guide + file table          |
+| `references/llm-code-skeleton.md` | Implementing Step 1 (model file) or Step 3 (config builder) |
+| `references/vlm-preprocessor.md`  | Implementing Step 4 (VL preprocessor)                       |
+| `references/pitfalls.md`          | Anything fails or produces wrong outputs                    |
 
 ### `/submit-pr`
-Full PR workflow: branch off main, lint, stage specific files, commit (conventional prefix), push, `gh pr create` with summary + test plan. Targets `InternLM/lmdeploy`.
+
+Use when ready to open a new pull request against `InternLM/lmdeploy`. Covers branch creation, lint, staged commit, push, and `gh pr create`. Returns: PR URL, branch name, commit SHA, lint status.
 
 ### `/resolve-review`
-Fetch PR inline and top-level review comments via `gh api`, fix each, lint, commit, push.
+
+Use when a PR has inline or top-level review comments to address. Fetches all comments via `gh api`, guides through fixing each, then lints, commits, and pushes. Returns: list of comments addressed, commit SHA, push confirmation.
 
 ### `/karpathy-guidelines`
-Coding behavior: think before coding, minimum code, surgical edits only, define verifiable success criteria. Apply at the start of any non-trivial implementation task.
 
----
+Use at the start of any non-trivial implementation task to set behavioral ground rules: think before coding, minimum code, surgical edits only, define verifiable success criteria.
+
+______________________________________________________________________
 
 ## Wiring to a repo
 

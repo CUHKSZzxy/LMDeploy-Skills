@@ -1,9 +1,19 @@
 ---
 name: check-env
-description: Check if the LMDeploy dev environment is properly set up.
+description: Use when `import lmdeploy` fails, CUDA not found, wrong Python version, editable install not recognized, or `conda run` invokes system Python instead of the env's Python.
 ---
 
 # Check LMDeploy Dev Environment
+
+> Last verified: 2026-04-23. Update Known Environments table if you add or rename envs.
+
+## Configuration
+
+| Placeholder    | Meaning                                                                      |
+| -------------- | ---------------------------------------------------------------------------- |
+| `<conda-root>` | Root of your miniconda/anaconda install (e.g. `/nvme1/zhouxinyu/miniconda3`) |
+| `<env-name>`   | Conda env name (see Known Environments table below)                          |
+| `<repo-dir>`   | Absolute path to the lmdeploy repo clone                                     |
 
 ## 1. Find and activate the conda env
 
@@ -34,22 +44,23 @@ python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda
 
 ## Known Environments
 
-| Repo dir | Conda env | Direct python path |
-|----------|-----------|--------------------|
-| `lmdeploy_fp8` | `fp8` | `/nvme1/zhouxinyu/miniconda3/envs/fp8/bin/python` |
-| `lmdeploy_vl`  | `vl`  | `/nvme1/zhouxinyu/miniconda3/envs/vl/bin/python`  |
+| Repo dir       | Conda env | Direct python path                                |
+| -------------- | --------- | ------------------------------------------------- |
+| `lmdeploy_fp8` | `fp8`     | `/nvme1/zhouxinyu/miniconda3/envs/fp8/bin/python` |
+| `lmdeploy_vl`  | `vl`      | `/nvme1/zhouxinyu/miniconda3/envs/vl/bin/python`  |
 
 **Important**: `conda run -n <env> python` may invoke the system Python (3.6, no packages).
 Always use the direct path for `pytest` and scripts:
+
 ```bash
 CUDA_VISIBLE_DEVICES=X /nvme1/zhouxinyu/miniconda3/envs/<env>/bin/python -m pytest ...
 ```
 
 ## Troubleshooting
 
-| Problem              | Fix                                             |
-| -------------------- | ----------------------------------------------- |
-| `conda: not found`   | `source ~/miniconda3/etc/profile.d/conda.sh`    |
-| Wrong Python         | `conda deactivate && conda activate <env-name>` |
-| `lmdeploy` not found | `pip install -e .` from repo root               |
+| Problem              | Fix                                                                  |
+| -------------------- | -------------------------------------------------------------------- |
+| `conda: not found`   | `source ~/miniconda3/etc/profile.d/conda.sh`                         |
+| Wrong Python         | `conda deactivate && conda activate <env-name>`                      |
+| `lmdeploy` not found | `pip install -e .` from repo root                                    |
 | `conda run` wrong py | Use direct path: `/nvme1/zhouxinyu/miniconda3/envs/<env>/bin/python` |
