@@ -96,6 +96,13 @@ ______________________________________________________________________
 
 ## Verification
 
+**Pick a free GPU first:**
+
+```bash
+nvidia-smi   # pick a GPU with 0% utilization and only a few MiB allocated
+export CUDA_VISIBLE_DEVICES=<gpu_id>
+```
+
 **LLM basic test:**
 
 ```bash

@@ -35,7 +35,14 @@ If it doesn't:
 pip install -e .                      # run from repo root
 ```
 
-## 3. Confirm python and CUDA
+## 3. Pick a free GPU
+
+```bash
+nvidia-smi   # pick a GPU with 0% utilization and only a few MiB allocated
+export CUDA_VISIBLE_DEVICES=<gpu_id>
+```
+
+## 4. Confirm python and CUDA
 
 ```bash
 which python                          # must show conda env path, not /usr/bin/python
