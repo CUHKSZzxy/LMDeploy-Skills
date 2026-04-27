@@ -22,6 +22,7 @@ Prefer this with `code-navigation` and `check-env` when the repo/env is uncertai
 
 - `scripts/kernel_bench_utils.py`: import into ad hoc kernel microbenchmarks for CUDA-event timing, device metadata, correctness summaries, and JSONL rows.
 - `scripts/compare_kernel_bench.py`: compare baseline/candidate JSONL benchmark rows and fail on correctness failures or configurable regressions.
+- `scripts/qwen_pytorch_smoke.py`: run a minimum Qwen3/Qwen3.5 PyTorch pipeline smoke with text and/or single-image prompts before and after kernel changes.
 - `references/hopper-triton-heuristics.md`: load only for Hopper/H100/H800 tuning, Nsight metric selection, or SM90-specific heuristic questions.
 
 ## 1. Scope The Kernel
@@ -88,6 +89,17 @@ Use two lanes when possible:
 - Microbench: direct kernel benchmark with CUDA events, warmup, enough iterations, fixed random seed, and correctness check.
 - Macrobench: real `lmdeploy` pipeline or serve workload with fixed prompts, max tokens, concurrency/request rate, quant policy, and backend flags.
 
+When benchmarking multiple branches/worktrees with an editable env, pin the
+imported checkout explicitly:
+
+```bash
+CUDA_VISIBLE_DEVICES=X PYTHONPATH=/path/to/lmdeploy-checkout \
+  /path/to/feature-env/bin/python bench.py
+```
+
+Check the benchmark metadata includes `lmdeploy.__file__`; otherwise a main
+worktree benchmark can accidentally import the feature branch from the env.
+
 For microbench scaffolding, import the bundled helper instead of rewriting the timing loop:
 
 ```python
@@ -102,6 +114,16 @@ python /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts
 ```
 
 Never compare a tuned candidate against a stale or differently configured baseline.
+
+Before/after kernel work, a quick end-to-end smoke can catch dispatch, quant-policy, and multimodal regressions that microbenches miss:
+
+```bash
+CUDA_VISIBLE_DEVICES=X /path/to/lmdeploy-env/bin/python \
+  /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts/qwen_pytorch_smoke.py \
+  --model /path/to/Qwen-or-Qwen3.5-checkpoint --case all --tp 1
+```
+
+Use an environment whose `lmdeploy` import points at the checkout being optimized. Use `--case text` for text-only checkpoints and `--case all` for multimodal checkpoints.
 
 ## 4. Profile Before Patching
 
