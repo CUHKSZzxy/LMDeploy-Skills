@@ -21,6 +21,8 @@ Prefer this with `code-navigation` and `check-env` when the repo/env is uncertai
 ## Bundled Helpers
 
 - `scripts/kernel_bench_utils.py`: import into ad hoc kernel microbenchmarks for CUDA-event timing, device metadata, correctness summaries, and JSONL rows.
+- `scripts/kernel_microbench.py`: generic CUDA-event runner for small case files that define direct LMDeploy kernel calls.
+- `scripts/microbench_case_template.py`: copyable case-file template for adding setup, run, and correctness hooks for a new kernel.
 - `scripts/compare_kernel_bench.py`: compare baseline/candidate JSONL benchmark rows and fail on correctness failures or configurable regressions.
 - `scripts/qwen_pytorch_smoke.py`: run a minimum Qwen3/Qwen3.5 PyTorch pipeline smoke with text and/or single-image prompts before and after kernel changes.
 - `references/hopper-triton-heuristics.md`: load only for Hopper/H100/H800 tuning, Nsight metric selection, or SM90-specific heuristic questions.
@@ -100,7 +102,20 @@ CUDA_VISIBLE_DEVICES=X PYTHONPATH=/path/to/lmdeploy-checkout \
 Check the benchmark metadata includes `lmdeploy.__file__`; otherwise a main
 worktree benchmark can accidentally import the feature branch from the env.
 
-For microbench scaffolding, import the bundled helper instead of rewriting the timing loop:
+For a new direct-kernel microbench, start from the generic runner instead of
+rewriting the timing loop. Copy `scripts/microbench_case_template.py`, replace
+its setup/run/check functions with the target kernel call, then run:
+
+```bash
+CUDA_VISIBLE_DEVICES=X PYTHONPATH=/path/to/lmdeploy-checkout \
+  /path/to/lmdeploy-env/bin/python \
+  /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts/kernel_microbench.py \
+  path/to/my_case.py --out artifacts/candidate.jsonl --label candidate --warmup 25 --repeat 100 \
+  -- --case-specific-arg value
+```
+
+Use the lower-level helper only when the generic case-file interface is too
+restrictive:
 
 ```python
 from scripts.kernel_bench_utils import append_jsonl, cuda_event_bench, summarize_times

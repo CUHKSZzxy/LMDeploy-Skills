@@ -37,7 +37,7 @@ Use at the start of any non-trivial implementation task to set behavioral ground
 
 ### `/triton-kernel-performance`
 
-Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a JSONL benchmark comparator, a Qwen PyTorch pipeline smoke script, and Hopper/H100 heuristics.
+Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a generic direct-kernel microbench runner, a JSONL benchmark comparator, a Qwen PyTorch pipeline smoke script, and Hopper/H100 heuristics.
 
 ______________________________________________________________________
 
