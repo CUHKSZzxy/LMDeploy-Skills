@@ -1,0 +1,198 @@
+---
+name: triton-kernel-performance
+description: Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads.
+---
+
+# Triton Kernel Performance For LMDeploy
+
+## Intent
+
+Use this skill for kernel PRs where correctness and performance both matter. The goal is a reproducible loop:
+
+1. identify the exact kernel path and shapes,
+2. prove correctness against a reference,
+3. benchmark the current code,
+4. profile before changing heuristics,
+5. patch one bottleneck at a time,
+6. re-run the same correctness and performance gates.
+
+Prefer this with `code-navigation` and `check-env` when the repo/env is uncertain.
+
+## Bundled Helpers
+
+- `scripts/kernel_bench_utils.py`: import into ad hoc kernel microbenchmarks for CUDA-event timing, device metadata, correctness summaries, and JSONL rows.
+- `scripts/compare_kernel_bench.py`: compare baseline/candidate JSONL benchmark rows and fail on correctness failures or configurable regressions.
+- `references/hopper-triton-heuristics.md`: load only for Hopper/H100/H800 tuning, Nsight metric selection, or SM90-specific heuristic questions.
+
+## 1. Scope The Kernel
+
+Start from the runtime path, not from a full repo scan.
+
+Common LMDeploy CUDA/Triton entry points:
+
+- KV cache write: `lmdeploy/pytorch/kernels/cuda/fill_kv_cache.py`
+- KV cache flatten/readback: `lmdeploy/pytorch/kernels/cuda/flatten_kv_cache.py`
+- Decode attention: `lmdeploy/pytorch/kernels/cuda/pagedattention.py`
+- Backend dispatch: `lmdeploy/pytorch/backends/cuda/attention/`
+- Cache allocation and metadata: `lmdeploy/pytorch/engine/cache_engine.py`
+- Quant policy plumbing: `lmdeploy/messages.py`, `lmdeploy/cli/utils.py`
+
+Record the target:
+
+- model/checkpoint, especially Qwen3/Qwen3.5 dense, MoE, GDN, or VL variant
+- GPU type, CUDA, torch, triton, LMDeploy commit
+- stage: prefill, decode, speculative decode, cache fill, flatten, sampling
+- dtypes and quantization: BF16/FP16/FP8, KV cache quant policy, scale layout
+- shapes: batch, seq lengths, block size, heads, kv heads, head dim, page/block counts
+
+## 2. Correctness First
+
+Do not tune a kernel whose semantics are still fuzzy.
+
+- Compare against a simple PyTorch reference or existing unquantized path.
+- Test non-contiguous strides if the public caller can produce them.
+- Test boundary masks: partial last block, empty-ish sequences, uneven context lengths, and page table indirection.
+- For quantized KV cache, verify scale direction explicitly: quantize as `fp_value / scale`, dequantize as `stored_value * scale`, and ensure every reader path receives the scale.
+- Guard unsupported backends and fast paths. If a path cannot consume quant metadata, reject it near dispatch instead of letting it run silently.
+- Keep K and V dimensions separate unless the model contract proves they are identical.
+
+For FP8 KV cache, pay special attention to:
+
+- `torch.float8_e4m3fn` range and saturation behavior,
+- per-token/per-head scale shape and stride,
+- scale metadata lifetime through fill, flatten, decode, and speculative decode,
+- accuracy tolerances against the no-quant baseline,
+- Qwen3.5-style FP8/KV-scale naming or remapping issues when loading model-side scales.
+
+## 3. Baseline Performance
+
+Capture a baseline before editing.
+
+Minimum artifact notes:
+
+```text
+repo:
+commit:
+branch:
+python:
+torch/triton/cuda:
+gpu:
+model:
+command:
+workload:
+metric before:
+```
+
+Use two lanes when possible:
+
+- Microbench: direct kernel benchmark with CUDA events, warmup, enough iterations, fixed random seed, and correctness check.
+- Macrobench: real `lmdeploy` pipeline or serve workload with fixed prompts, max tokens, concurrency/request rate, quant policy, and backend flags.
+
+For microbench scaffolding, import the bundled helper instead of rewriting the timing loop:
+
+```python
+from scripts.kernel_bench_utils import append_jsonl, cuda_event_bench, summarize_times
+```
+
+Then compare candidates:
+
+```bash
+python /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts/compare_kernel_bench.py \
+  artifacts/baseline.jsonl artifacts/candidate.jsonl
+```
+
+Never compare a tuned candidate against a stale or differently configured baseline.
+
+## 4. Profile Before Patching
+
+Use profiler evidence to choose the edit.
+
+Look for:
+
+- kernel wall time and invocation count,
+- memory bandwidth vs compute saturation,
+- occupancy, register pressure, spills, shared-memory pressure,
+- excessive tiny kernels around the hot path,
+- hidden synchronizations, host/device copies, or shape-dependent recompilation,
+- missed fusion or overlap opportunities around RoPE, norm, cache write, and attention.
+
+When using torch profiler, report the same three views:
+
+- kernel table: top CUDA/Triton kernels by GPU time,
+- overlap-opportunity table: idle windows, collectives, CPU gaps, stream gaps,
+- fuse-pattern table: adjacent kernels that may safely become one path.
+
+For Qwen3/Qwen3.5-family work, check whether existing optimized-family ideas apply before inventing a new one:
+
+- split Q/K norm placement,
+- RoPE plus cache-write fusion,
+- projection or GDN fusion,
+- alt-stream overlap,
+- FP8 scale handling and remapping,
+- MTP/speculative decode compatibility.
+
+For Hopper/H100/H800, load `references/hopper-triton-heuristics.md` before choosing Nsight metrics or changing Triton block/warp/stage heuristics.
+
+## 5. Triton Heuristics
+
+Tune only dimensions that are connected to the measured bottleneck.
+
+Memory/layout:
+
+- Make the fastest-moving dimension the vectorized load/store dimension.
+- Keep loads coalesced across lanes; avoid gathering when a layout change or index transform can make it contiguous.
+- Hoist stride and offset math outside repeated inner expressions when possible.
+- Use masks only where needed, and keep mask predicates simple.
+- Avoid extra reads/writes of scale or metadata inside element loops.
+
+Compile-time specialization:
+
+- Use `tl.constexpr` for branchy feature flags, head dim, group size, block size, and quant mode.
+- Prefer separate specializations for genuinely different layouts or dtypes over one heavily branched kernel.
+- Keep autotune candidate lists small and shape-relevant; large autotune grids can hurt usability.
+
+Block and warp choices:
+
+- Start around the real model shapes: head dim 64/128/256, block size 16/32, typical Qwen KV heads.
+- Favor powers of two for block dimensions used by `tl.arange`.
+- Increase `num_warps` only when the tile has enough work; watch register pressure and occupancy.
+- Adjust `num_stages` based on memory latency hiding, not as a ritual.
+- Measure small-batch decode and large-prefill separately; one heuristic rarely wins both.
+
+Numerics and quantization:
+
+- Accumulate in the intended dtype; do not accidentally force FP32 in a bandwidth-bound path.
+- For FP8, keep scale loads in FP32/BF16 as required by the math and cast explicitly near use.
+- Validate saturation and zero-scale protection on random, near-zero, and large-amplitude inputs.
+
+## 6. Patch Discipline
+
+Patch narrowly:
+
+- one kernel or dispatch choice at a time,
+- no unrelated formatting,
+- no benchmark-only behavior changes,
+- clear guards for hardware, dtype, backend, and unsupported model shapes.
+
+If a kernel has both correctness and speed issues, fix correctness first, then tune speed in a separate step when practical.
+
+## 7. Validation Contract
+
+Before calling a kernel optimization done, provide:
+
+- changed files,
+- correctness tests or reference comparisons and tolerances,
+- exact benchmark commands,
+- before/after table for latency, throughput, or kernel time,
+- profiler evidence if the claimed win is kernel-level,
+- residual risks such as untested GPU, unsupported FA/speculative path, or missing macrobench.
+
+Recommended final table:
+
+| Lane | Baseline | Candidate | Delta | Notes |
+| --- | ---: | ---: | ---: | --- |
+| micro kernel time | | | | |
+| pipeline/serve throughput | | | | |
+| accuracy/correctness | | | | |
+
+Do not claim a speedup from a single noisy run. For small deltas, rerun enough samples to decide whether the change is real; treat under 3-5% as noise unless variance is measured lower.

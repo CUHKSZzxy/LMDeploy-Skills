@@ -35,6 +35,10 @@ Use when a LMDeploy pull request has review comments to address. Verifies repo s
 
 Use at the start of any non-trivial implementation task to set behavioral ground rules: think before coding, minimum code, surgical edits only, define verifiable success criteria.
 
+### `/triton-kernel-performance`
+
+Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a JSONL benchmark comparator, and Hopper/H100 heuristics.
+
 ______________________________________________________________________
 
 ## Wiring to a repo
