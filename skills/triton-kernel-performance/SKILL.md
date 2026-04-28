@@ -23,9 +23,11 @@ Prefer this with `code-navigation` and `check-env` when the repo/env is uncertai
 - `scripts/kernel_bench_utils.py`: import into ad hoc kernel microbenchmarks for CUDA-event timing, device metadata, correctness summaries, and JSONL rows.
 - `scripts/kernel_microbench.py`: generic CUDA-event runner for small case files that define direct LMDeploy kernel calls.
 - `scripts/microbench_case_template.py`: copyable case-file template for adding setup, run, and correctness hooks for a new kernel.
+- `scripts/summarize_kernel_bench.py`: compact table view for one or more JSONL benchmark artifact files.
 - `scripts/compare_kernel_bench.py`: compare baseline/candidate JSONL benchmark rows and fail on correctness failures or configurable regressions.
 - `scripts/qwen_pytorch_smoke.py`: run a minimum Qwen3/Qwen3.5 PyTorch pipeline smoke with text and/or single-image prompts before and after kernel changes.
 - `references/hopper-triton-heuristics.md`: load only for Hopper/H100/H800 tuning, Nsight metric selection, or SM90-specific heuristic questions.
+- `references/lmdeploy-kernel-patterns.md`: load when optimizing LMDeploy attention/KV-cache pipelines, interpreting split-K sweeps, or deciding whether to fuse/bypass flatten/dequant work.
 
 ## 1. Scope The Kernel
 
@@ -39,6 +41,10 @@ Common LMDeploy CUDA/Triton entry points:
 - Backend dispatch: `lmdeploy/pytorch/backends/cuda/attention/`
 - Cache allocation and metadata: `lmdeploy/pytorch/engine/cache_engine.py`
 - Quant policy plumbing: `lmdeploy/messages.py`, `lmdeploy/cli/utils.py`
+
+For attention/KV-cache work, use `lmdeploy-attention-dataflow` first when the
+runtime path is unclear. Performance conclusions are only meaningful after the
+actual backend path is known.
 
 Record the target:
 
@@ -128,6 +134,14 @@ python /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts
   artifacts/baseline.jsonl artifacts/candidate.jsonl
 ```
 
+For a fast read of many artifact files, summarize them before deciding what to
+rerun:
+
+```bash
+python /nvme1/zhouxinyu/LMDeploy-Skills/skills/triton-kernel-performance/scripts/summarize_kernel_bench.py \
+  benchmark/artifacts/*.jsonl
+```
+
 Never compare a tuned candidate against a stale or differently configured baseline.
 
 Before/after kernel work, a quick end-to-end smoke can catch dispatch, quant-policy, and multimodal regressions that microbenches miss:
@@ -152,6 +166,11 @@ Look for:
 - excessive tiny kernels around the hot path,
 - hidden synchronizations, host/device copies, or shape-dependent recompilation,
 - missed fusion or overlap opportunities around RoPE, norm, cache write, and attention.
+
+For LMDeploy attention/KV-cache optimization, profile stages independently:
+cache fill, decode attention, flatten/readback, prefill attention, and pipeline
+smoke. A full pipeline number alone can hide whether the bottleneck is in cache
+write, flatten/dequant, paged attention, or launch/reduce overhead.
 
 When using torch profiler, report the same three views:
 
@@ -196,6 +215,14 @@ Block and warp choices:
 - Adjust `num_stages` based on memory latency hiding, not as a ritual.
 - Measure small-batch decode and large-prefill separately; one heuristic rarely wins both.
 
+Split-K / parallelism:
+
+- Sweep split-K or equivalent parallelism only after the decode kernel is the measured bottleneck.
+- Label forced heuristic runs in benchmark metadata; unlabeled split sweeps are not trustworthy evidence.
+- Check short and long contexts. More split parallelism can help long-context decode while doing nothing or hurting short context.
+- Watch the reduce kernel. If the first split kernel improves but reduce time grows enough to erase the win, stop increasing split-K.
+- Guard production heuristic changes by quant policy, hardware capability, and shape whenever the data only covers that slice.
+
 Numerics and quantization:
 
 - Accumulate in the intended dtype; do not accidentally force FP32 in a bandwidth-bound path.
@@ -223,6 +250,10 @@ Before calling a kernel optimization done, provide:
 - before/after table for latency, throughput, or kernel time,
 - profiler evidence if the claimed win is kernel-level,
 - residual risks such as untested GPU, unsupported FA/speculative path, or missing macrobench.
+
+Treat concurrent runs on the same GPU as suspect unless isolation is proven.
+Rerun the winning and baseline candidates serially on an idle GPU before
+claiming a speedup.
 
 Recommended final table:
 

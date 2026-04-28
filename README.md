@@ -35,9 +35,13 @@ Use when a LMDeploy pull request has review comments to address. Verifies repo s
 
 Use at the start of any non-trivial implementation task to set behavioral ground rules: think before coding, minimum code, surgical edits only, define verifiable success criteria.
 
+### `/lmdeploy-attention-dataflow`
+
+Use when tracing LMDeploy PyTorch attention, KV-cache, quant-policy, prefill, decode, FA3, or FlashMLA dataflow before reviewing correctness or performance changes.
+
 ### `/triton-kernel-performance`
 
-Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a generic direct-kernel microbench runner, a JSONL benchmark comparator, a Qwen PyTorch pipeline smoke script, and Hopper/H100 heuristics.
+Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a generic direct-kernel microbench runner, JSONL artifact summary/compare scripts, a Qwen PyTorch pipeline smoke script, and Hopper/H100 plus LMDeploy attention/KV heuristics.
 
 ______________________________________________________________________
 
