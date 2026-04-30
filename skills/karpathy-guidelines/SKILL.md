@@ -30,6 +30,9 @@ Before implementing:
 - No "flexibility" or "configurability" that wasn't requested.
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
+- Keep public feature surface smaller than the experimental branch surface.
+  Remove or park promising but unproven flags, modes, aliases, and compatibility
+  paths until they have owners, tests, backend support, and a clear user.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 

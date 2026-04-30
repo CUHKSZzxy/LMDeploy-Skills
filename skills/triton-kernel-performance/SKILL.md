@@ -64,6 +64,9 @@ Do not tune a kernel whose semantics are still fuzzy.
 - For quantized KV cache, verify scale direction explicitly: quantize as `fp_value / scale`, dequantize as `stored_value * scale`, and ensure every reader path receives the scale.
 - Guard unsupported backends and fast paths. If a path cannot consume quant metadata, reject it near dispatch instead of letting it run silently.
 - Keep K and V dimensions separate unless the model contract proves they are identical.
+- Separate semantic dtype from physical storage. A tensor stored as `torch.float8_*`, a packed `uint8` payload, and a custom bit layout need different cache descriptors, kernel casts, test references, and tolerances.
+- Check GPU capability before adding or trusting a Triton conversion path. Some dtype conversions compile on one architecture and fail on another; skip or route only the unsupported slice, not the whole feature, when possible.
+- Compare quantized outputs in the domain that proves the contract. Raw payload equality is useful for deterministic encoders; dequantized-value comparison is often the better assertion for approximate formats.
 
 For FP8 KV cache, pay special attention to:
 
@@ -171,6 +174,18 @@ For LMDeploy attention/KV-cache optimization, profile stages independently:
 cache fill, decode attention, flatten/readback, prefill attention, and pipeline
 smoke. A full pipeline number alone can hide whether the bottleneck is in cache
 write, flatten/dequant, paged attention, or launch/reduce overhead.
+
+When comparing branches or policy variants, keep the matrix explicit:
+
+- baseline branch and candidate branch,
+- public policy/config value,
+- cache payload dtype and metadata allocation,
+- active attention backend,
+- GPU architecture,
+- exact shape family.
+
+If one row changes both semantics and performance behavior, split it into a
+smaller comparison before drawing conclusions.
 
 When using torch profiler, report the same three views:
 

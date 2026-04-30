@@ -29,19 +29,19 @@ Use when local LMDeploy changes are ready to become a pull request. Verifies rep
 
 ### `/resolve-review`
 
-Use when a LMDeploy pull request has review comments to address. Verifies repo state, branch, env, and `gh` auth first; then fetches comments, makes minimal fixes, validates locally, and commits/pushes only when the branch is ready. Returns: list of comments addressed, commit SHA, push confirmation.
+Use when a LMDeploy pull request has review comments to address. Verifies repo state, branch, env, and `gh` auth first; then fetches comments, makes minimal fixes, validates locally, handles hook auto-fix/CI lint triage carefully, and commits/pushes only when the branch is ready. Returns: list of comments addressed, commit SHA, push confirmation.
 
 ### `/karpathy-guidelines`
 
-Use at the start of any non-trivial implementation task to set behavioral ground rules: think before coding, minimum code, surgical edits only, define verifiable success criteria.
+Use at the start of any non-trivial implementation task to set behavioral ground rules: think before coding, minimum code, surgical edits only, keep experimental surface out of public APIs until proven, and define verifiable success criteria.
 
 ### `/lmdeploy-attention-dataflow`
 
-Use when tracing LMDeploy PyTorch attention, KV-cache, quant-policy, prefill, decode, FA3, or FlashMLA dataflow before reviewing correctness or performance changes.
+Use when tracing LMDeploy PyTorch attention, KV-cache, quant-policy, prefill, decode, FA3, or FlashMLA dataflow before reviewing correctness or performance changes. Includes an end-to-end policy lifecycle trace from CLI/config through cache allocation, backend dispatch, kernels, and tests.
 
 ### `/triton-kernel-performance`
 
-Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a generic direct-kernel microbench runner, JSONL artifact summary/compare scripts, a Qwen PyTorch pipeline smoke script, and Hopper/H100 plus LMDeploy attention/KV heuristics.
+Use when optimizing, reviewing, or validating LMDeploy PyTorch CUDA/Triton kernels for correctness and speed, especially attention, KV cache, quantization, FP8 KV cache, and Qwen3/Qwen3.5-family workloads. Includes reusable CUDA-event benchmark helpers, a generic direct-kernel microbench runner, JSONL artifact summary/compare scripts, a Qwen PyTorch pipeline smoke script, GPU/dtype compatibility checks, and Hopper/H100 plus LMDeploy attention/KV heuristics.
 
 ______________________________________________________________________
 

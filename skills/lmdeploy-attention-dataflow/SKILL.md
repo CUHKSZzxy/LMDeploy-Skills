@@ -49,7 +49,28 @@ Before judging a path, record:
 - cache dtype and scale metadata layout,
 - `max_q_seqlen`, block size, heads, kv heads, and head dim.
 
-## 2. Shared Non-MLA Attention Shape
+## 2. Trace Public Policy End-To-End
+
+For config, quantization, or backend policy changes, map the whole lifecycle
+before editing kernels:
+
+```text
+CLI/helper alias
+        -> message/config dataclass
+        -> cache config and cache descriptors
+        -> model agent / cache engine allocation
+        -> attention module state
+        -> backend dispatch
+        -> kernel arguments
+        -> tests and docs
+```
+
+Do not treat a policy as supported just because it parses. Confirm its cache
+payload, optional metadata, and reader paths line up for the selected backend.
+If a mode is experimental or backend-specific, keep it private or guard it until
+the runtime path, tests, and performance story are all clear.
+
+## 3. Shared Non-MLA Attention Shape
 
 Default Triton and FA3 implementations both have the same outer pattern:
 
@@ -75,7 +96,7 @@ Primary files:
 - `lmdeploy/pytorch/kernels/cuda/flatten_kv_cache.py`
 - `lmdeploy/pytorch/kernels/cuda/flashattention.py`
 
-## 3. KV Cache Fill Flow
+## 4. KV Cache Fill Flow
 
 ```text
 attention.forward()
@@ -100,7 +121,7 @@ Code anchors:
 - `lmdeploy/pytorch/backends/cuda/attention/default.py`
 - `lmdeploy/pytorch/backends/cuda/attention/fa3.py`
 
-## 4. Default Triton Decode Flow
+## 5. Default Triton Decode Flow
 
 ```text
 TritonAttentionImpl.forward()
@@ -128,7 +149,7 @@ Code anchors:
 - `lmdeploy/pytorch/kernels/cuda/pagedattention.py`: paged attention wrapper
   and kernels
 
-## 5. Default Triton Prefill Flow
+## 6. Default Triton Prefill Flow
 
 ```text
 TritonAttentionImpl.forward()
@@ -151,7 +172,7 @@ Code anchors:
 - `lmdeploy/pytorch/kernels/cuda/flatten_kv_cache.py`
 - `lmdeploy/pytorch/kernels/cuda/flashattention.py`
 
-## 6. FA3 Flow
+## 7. FA3 Flow
 
 ```text
 FA3Impl.forward()
@@ -182,7 +203,7 @@ Code anchors:
 If a listed file or symbol has moved in the target checkout, use `rg` for the
 class/function name and continue from the discovered call site.
 
-## 7. FlashMLA Flow
+## 8. FlashMLA Flow
 
 ```text
 FlashMLAImpl.forward()
@@ -209,7 +230,7 @@ Code anchors:
 - `lmdeploy/pytorch/kernels/cuda/flatten_kv_cache.py`
 - FlashMLA third-party wrapper imported by `mla.py`
 
-## 8. Correctness Checklist
+## 9. Correctness Checklist
 
 When a backend or quant policy changes, answer these before editing kernels:
 

@@ -80,9 +80,21 @@ Run the narrowest useful validation first.
 - Prefer targeted tests for the touched files or subsystem.
 - Run `pre-commit` if repo policy expects it.
 - If a comment changes behavior, include a reproducer or test when practical.
+- If CI reports that a hook modified files, rerun the same hook locally and
+  inspect `git diff` before committing. Hook auto-fixes can touch files outside
+  the review fix, especially with `--all-files`.
 
 ```bash
 pre-commit run --all-files
+```
+
+For PR-focused iteration on a dirty or large checkout, run hooks on the files
+changed by the PR first, then use `--all-files` before the final push when the
+tree is clean enough to interpret:
+
+```bash
+pre-commit run --files <changed-files>
+git diff --name-only
 ```
 
 ## 5. Stage & commit
