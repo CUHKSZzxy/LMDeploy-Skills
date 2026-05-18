@@ -55,7 +55,7 @@ Copy or invoke scripts from `scripts/`:
 Example:
 
 ```bash
-INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/Infra-Skills}
+INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/common/Infra-Skills}
 SKILL_DIR="$INFRA_SKILLS_HOME/skills/e2e-accuracy-benchmark"
 RUN_DIR="./benchmark/e2e_${MODEL_ABBR}_gsm8k"
 mkdir -p "$RUN_DIR/0_accuracy"
@@ -68,7 +68,7 @@ python "$SKILL_DIR/scripts/gsm8k_acc.py" \
 ```
 
 ```bash
-INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/Infra-Skills}
+INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/common/Infra-Skills}
 SKILL_DIR="$INFRA_SKILLS_HOME/skills/e2e-accuracy-benchmark"
 RUN_DIR="./benchmark/e2e_${MODEL_ABBR}_ocrbench"
 mkdir -p "$RUN_DIR/0_accuracy"

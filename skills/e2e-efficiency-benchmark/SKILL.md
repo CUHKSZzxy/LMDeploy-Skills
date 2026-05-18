@@ -71,7 +71,7 @@ helpers.
 Typical layout:
 
 ```bash
-INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/Infra-Skills}
+INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/common/Infra-Skills}
 SKILL_DIR="$INFRA_SKILLS_HOME/skills/e2e-efficiency-benchmark"
 MODEL_LABEL=qwen35_35b
 RUN_DIR="./benchmark/e2e_${MODEL_LABEL}_sharegpt_kvfp8"
@@ -98,7 +98,7 @@ python "$SKILL_DIR/scripts/collect_bench.py" \
 Image quick-check layout:
 
 ```bash
-INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/Infra-Skills}
+INFRA_SKILLS_HOME=${INFRA_SKILLS_HOME:-/nvme1/zhouxinyu/common/Infra-Skills}
 SKILL_DIR="$INFRA_SKILLS_HOME/skills/e2e-efficiency-benchmark"
 MODEL_LABEL=qwen35_35b_a3b
 RUN_DIR="./benchmark/e2e_${MODEL_LABEL}_image_quick"

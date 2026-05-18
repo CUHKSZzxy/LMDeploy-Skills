@@ -5,8 +5,8 @@ defaults, not general LMDeploy project facts.
 
 ## Paths
 
-- Infra skills repo: `/nvme1/zhouxinyu/Infra-Skills`
-- Skill source: `/nvme1/zhouxinyu/Infra-Skills/skills`
+- Infra skills repo: `/nvme1/zhouxinyu/common/Infra-Skills`
+- Skill source: `/nvme1/zhouxinyu/common/Infra-Skills/skills`
 - Codex skill home: `/nvme1/zhouxinyu/.codex/skills`
 - Claude skill home: `/nvme1/zhouxinyu/.claude/skills`
 - Conda root: `/nvme1/zhouxinyu/miniconda3`
@@ -14,7 +14,7 @@ defaults, not general LMDeploy project facts.
 For reusable commands, prefer this variable:
 
 ```bash
-INFRA_SKILLS_HOME=/nvme1/zhouxinyu/Infra-Skills
+INFRA_SKILLS_HOME=/nvme1/zhouxinyu/common/Infra-Skills
 ```
 
 ## Benchmark Artifacts

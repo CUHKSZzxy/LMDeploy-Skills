@@ -33,8 +33,6 @@ Use the smallest durable home:
   retyping commands or benchmark snippets.
 - `docs/local-conventions.md`: machine-specific paths, env names, and local
   linking rules.
-- `model-pr-optimization-history/`: model-family lessons from upstream PRs and
-  recurring review patterns.
 - `templates/lesson-candidate.md`: five-field scratchpad for deciding whether a
   new lesson belongs in the repo.
 - rollout summaries and memory: raw session history, exact logs, private paths,
@@ -56,8 +54,6 @@ When a lesson candidate is useful, choose one:
 - **Add a reference** when the lesson is detailed but only needed after a skill
   is already active.
 - **Add a script** when the same mechanical check or benchmark should be reused.
-- **Update model history** when the lesson is about a model family or upstream
-  PR pattern.
 - **Defer** when the lesson might recur but has not proved reusable yet.
 - **Reject** when the candidate is too narrow, stale, private, or expensive in
   context.

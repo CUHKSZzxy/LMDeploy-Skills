@@ -6,5 +6,5 @@ the lesson is promoted, deferred, or rejected.
 - Symptom:
 - Root cause:
 - Reusable rule:
-- Target home: skill / reference / script / model history / defer / reject
+- Target home: skill / reference / script / defer / reject
 - Validation:

@@ -4,7 +4,7 @@ Personal skills for LMDeploy development.
 
 This repo is also a small heuristic-learning layer for LMDeploy work: recurring
 feedback from sessions is compressed into triggerable skills, references,
-scripts, or model-history notes. See `docs/heuristic-learning.md` for the
+or scripts. See `docs/heuristic-learning.md` for the
 boundaries and update loop.
 
 ## Skills
@@ -22,23 +22,13 @@ boundaries and update loop.
 | `/support-new-model` | New LLM/VLM PyTorch backend support |
 | `/triton-kernel-performance` | CUDA/Triton correctness, benchmarking, and performance work |
 
-## Model PR optimization history
-
-- `model-pr-optimization-history/qwen3.md`: Qwen3 dense/MoE PyTorch notes.
-- `model-pr-optimization-history/qwen3vl.md`: Qwen3-VL PyTorch and VL-serving notes.
-- `model-pr-optimization-history/qwen3omni.md`: Qwen3-Omni PyTorch and
-  audio/video preprocessing notes.
-- `model-pr-optimization-history/qwen3-next.md`: Qwen3-Next PyTorch notes.
-- `model-pr-optimization-history/qwen35.md`: Qwen3.5 PyTorch, MoE, and MTP notes.
-
 ## Heuristic learning framework
 
 - `docs/heuristic-learning.md`: repo boundaries, promotion choices, compression
   checks, and validation expectations.
 - `docs/local-conventions.md`: local paths, env names, and symlink conventions.
 - `templates/lesson-candidate.md`: scratchpad for deciding whether a session
-  lesson should become a skill, reference, script, model-history note, or
-  nothing.
+  lesson should become a skill, reference, script, or nothing.
 
 ______________________________________________________________________
 
